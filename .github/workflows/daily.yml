@@ -8,15 +8,6 @@ on:
 
   # Manual trigger — useful for testing before the first scheduled run
   workflow_dispatch:
-    inputs:
-      dry_run:
-        description: 'Dry run (generate but do not send email)'
-        required: false
-        default: 'false'
-        type: choice
-        options:
-          - 'false'
-          - 'true'
 
 # ── Permissions ─────────────────────────────────────────────────────────────
 permissions:
