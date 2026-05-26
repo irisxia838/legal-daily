@@ -1,0 +1,73 @@
+name: 📚 Daily Legal Studies
+
+# ── Triggers ────────────────────────────────────────────────────────────────
+on:
+  schedule:
+    # 00:00 UTC  =  08:00 Beijing Time (UTC+8)
+    - cron: '0 0 * * *'
+
+  # Manual trigger — useful for testing before the first scheduled run
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (generate but do not send email)'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+
+# ── Permissions ─────────────────────────────────────────────────────────────
+permissions:
+  contents: write    # needed to commit progress.json back to the repo
+
+# ── Job ─────────────────────────────────────────────────────────────────────
+jobs:
+  send-daily:
+    name: Generate & Send
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout — use GITHUB_TOKEN so the bot can push back
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      # 2. Python setup with pip cache
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # 4. Run generator
+      - name: Run daily generator
+        env:
+          ANTHROPIC_API_KEY:  ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_USER:         ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          RECIPIENT_EMAIL:    ${{ secrets.RECIPIENT_EMAIL }}
+          DRY_RUN:            ${{ github.event.inputs.dry_run || 'false' }}
+        run: python scripts/daily_generate.py
+
+      # 5. Commit updated progress back to repo
+      - name: Commit progress
+        run: |
+          git config user.name  "legal-studies-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Stage progress file and any concept files touched today
+          git add progress/progress.json concepts/*.json
+
+          # Only commit if there are actual changes
+          if git diff --staged --quiet; then
+            echo "Nothing to commit."
+          else
+            git commit -m "📚 Daily update $(TZ='Asia/Shanghai' date +'%Y-%m-%d')"
+            git push
+          fi

@@ -1,0 +1,5 @@
+# Cloud runtime (GitHub Actions)
+anthropic>=0.40.0
+
+# Local-only (PDF extraction — not needed on cloud)
+pdfplumber>=0.11.0
