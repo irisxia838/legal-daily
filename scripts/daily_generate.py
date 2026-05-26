@@ -145,7 +145,7 @@ SYSTEM_PROMPT = """你是一位精通法学与文学的双栖学者，专门为�
 def generate_content(concept: Dict, subject: str) -> Optional[Dict]:
     genai.configure(api_key=os.environ["GEMINI_API_KEY"])
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-2.0-flash",
         system_instruction=SYSTEM_PROMPT,
     )
     meta = SUBJECT_META[subject]
