@@ -13,7 +13,7 @@ from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import List, Dict, Optional, Tuple
-import anthropic
+import google.generativeai as genai
 
 logging.basicConfig(
     level=logging.INFO,
@@ -143,7 +143,11 @@ SYSTEM_PROMPT = """你是一位精通法学与文学的双栖学者，专门为�
 你的输出必须严格按照JSON格式，不得添加任何说明或代码块标记。"""
 
 def generate_content(concept: Dict, subject: str) -> Optional[Dict]:
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash",
+        system_instruction=SYSTEM_PROMPT,
+    )
     meta = SUBJECT_META[subject]
     thinkers = "、".join(concept.get("key_thinkers", [])) or "多位法学家"
 
@@ -193,13 +197,14 @@ def generate_content(concept: Dict, subject: str) -> Optional[Dict]:
 4. 思考题须有挑战性，引导批判性思维"""
 
     try:
-        msg = client.messages.create(
-            model="claude-sonnet-4-5",
-            max_tokens=4096,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}]
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.GenerationConfig(
+                max_output_tokens=4096,
+                temperature=0.9,
+            ),
         )
-        raw = msg.content[0].text.strip()
+        raw = response.text.strip()
         # Strip code fences if present
         if raw.startswith("```"):
             raw = raw.split("```", 2)[1]
