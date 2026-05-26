@@ -20,10 +20,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout — anonymous for public repo; token injected for push later
+      # 1. Checkout — use PAT to bypass new-account GITHUB_TOKEN restrictions
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          token: ${{ secrets.GH_PAT }}
           fetch-depth: 1
 
       # 2. Python setup with pip cache
@@ -50,13 +51,13 @@ jobs:
       # 5. Commit updated progress back to repo
       - name: Commit progress
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           git config user.name  "legal-studies-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Inject token into remote URL for push
-          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/irisxia838/legal-daily.git
+          # Inject PAT into remote URL for push
+          git remote set-url origin https://x-access-token:${GH_PAT}@github.com/irisxia838/legal-daily.git
 
           # Stage progress file and any concept files touched today
           git add progress/progress.json concepts/*.json
