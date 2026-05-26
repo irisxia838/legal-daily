@@ -13,7 +13,7 @@ from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import List, Dict, Optional, Tuple
-from groq import Groq
+import google.generativeai as genai
 
 logging.basicConfig(
     level=logging.INFO,
@@ -143,7 +143,11 @@ SYSTEM_PROMPT = """你是一位精通法学与文学的双栖学者，专门为�
 你的输出必须严格按照JSON格式，不得添加任何说明或代码块标记。"""
 
 def generate_content(concept: Dict, subject: str) -> Optional[Dict]:
-    client = Groq(api_key=os.environ["GROQ_API_KEY"])
+    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash",
+        system_instruction=SYSTEM_PROMPT,
+    )
     meta = SUBJECT_META[subject]
     thinkers = "、".join(concept.get("key_thinkers", [])) or "多位法学家"
 
@@ -193,16 +197,14 @@ def generate_content(concept: Dict, subject: str) -> Optional[Dict]:
 4. 思考题须有挑战性，引导批判性思维"""
 
     try:
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user",   "content": prompt},
-            ],
-            max_tokens=4096,
-            temperature=0.9,
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.GenerationConfig(
+                max_output_tokens=4096,
+                temperature=0.9,
+            ),
         )
-        raw = response.choices[0].message.content.strip()
+        raw = response.text.strip()
         # Strip code fences if present
         if raw.startswith("```"):
             raw = raw.split("```", 2)[1]
