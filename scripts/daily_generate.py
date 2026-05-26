@@ -194,7 +194,7 @@ def generate_content(concept: Dict, subject: str) -> Optional[Dict]:
 
     try:
         msg = client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model="claude-sonnet-4-5",
             max_tokens=4096,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}]
