@@ -366,8 +366,8 @@
       ],
       "difficulty": "foundational",
       "source": "seed",
-      "used": false,
-      "used_date": null,
+      "used": true,
+      "used_date": "2026-05-30",
       "subject": "jurisprudence"
     },
     {

@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "created_date": "2025-01-01",
-  "last_run_date": "2026-05-29",
-  "total_concepts_sent": 8,
+  "last_run_date": "2026-05-30",
+  "total_concepts_sent": 10,
   "current_phase": 1,
   "phases_completed": [],
   "used_concept_ids": [
@@ -13,6 +13,8 @@
     "jur_015",
     "ipl_005",
     "jur_016",
-    "ipl_008"
+    "ipl_008",
+    "jur_023",
+    "ipl_009"
   ]
 }
